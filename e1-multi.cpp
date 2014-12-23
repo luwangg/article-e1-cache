@@ -360,11 +360,40 @@ void measure_write_uncached (const Demux & demux)
     cout << endl;
 }
 
+void measure_rand(const Demux & demux)
+{
+    printf("rand  %-30s:", typeid (demux).name());
+    fflush(stdout);
+    unsigned iterations = ITERATIONS;
+    int64_t tfirst;
+    srand(0);
+
+    for (unsigned count = MIN_COUNT; count <= MAX_COUNT; count *= 2) {
+        uint64_t t0 = currentTimeMillis();
+        for (unsigned i = 0; i < iterations; i++) {
+            for (unsigned j = 0; j < count; j++) {
+                unsigned p = rand() & (count - 1);
+                demux.demux(src + SRC_SIZE * p, SRC_SIZE, dst + NUM_TIMESLOTS * p);
+            }
+        }
+        int64_t t = (int64_t)(currentTimeMillis() - t0);
+        if (count == MIN_COUNT) {
+            tfirst = t;
+        }
+        else {
+            t -= tfirst;
+        }
+        printf("%5d", t);
+        fflush(stdout);
+        iterations /= 2;
+    }
+    cout << endl;
+}
+
 void measure(const Demux & demux)
 {
     measure_base(demux);
-    measure_read_uncached(demux);
-    measure_write_uncached(demux);
+    measure_rand(demux);
     printf("\n");
 }
 
